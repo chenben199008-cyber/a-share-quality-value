@@ -69,7 +69,8 @@ def build_html(output_dir: Path, safe_code: str, name: str, code: str) -> Path:
         ax.text(value, ax.get_ylim()[1]*.98, label, rotation=90, va="top", ha="right",
                 color=color, fontsize=7)
     current_display = min(metrics["current_pe"], chart_hi * .995)
-    ax.axvline(current_display, color="#ffffff", lw=2.2)
+    current_line = ax.axvline(current_display, color="#ffffff", lw=2.8, ls="-")
+    current_line.set_gid("current-pe-solid-white")
     current_label = f'当前 {metrics["current_pe"]:.1f}×' + (" → 超出图示" if metrics["current_pe"] > chart_hi else "")
     ax.text(current_display, ax.get_ylim()[1]*.88, current_label, color="#ffffff", fontsize=9,
             weight="bold", ha="right" if metrics["current_pe"] > chart_hi else "left")
@@ -179,7 +180,7 @@ def build_html(output_dir: Path, safe_code: str, name: str, code: str) -> Path:
 <div class="card"><div class="label">3年历史分位</div><div class="value">{metrics["historical_percentile"]:.1%}</div><div class="hint">低于约八成历史交易日</div></div>
 <div class="card"><div class="label">综合判断</div><div class="value">{state_value}</div><div class="hint">{state_hint}</div></div>
 <div class="card"><div class="label">最近一次低估</div><div class="value">{int(latest["trading_days"]) if latest is not None else 0}天</div><div class="hint">{latest_text}</div></div></section>
-<section class="grid"><article class="panel"><h2>现在贵不贵</h2><div class="desc">柱形是实际出现天数，白线是当前PE</div><div class="zones"><span class="zone z1">极端低估</span><span class="zone z2">低估</span><span class="zone z3">合理</span><span class="zone z4">高估</span><span class="zone z5">极端高估</span></div>{hist_svg}</article>
+<section class="grid"><article class="panel"><h2>现在贵不贵</h2><div class="desc">柱形是实际出现天数，白色实线是当前PE</div><div class="zones"><span class="zone z1">极端低估</span><span class="zone z2">低估</span><span class="zone z3">合理</span><span class="zone z4">高估</span><span class="zone z5">极端高估</span></div><div data-current-pe-line="solid-white">{hist_svg}</div></article>
 <article class="panel"><h2>历史低估通常多久</h2><div class="desc">蓝柱为最新一次；红线是累计低估时长占比</div>{pareto_svg}</article>
 <article class="panel wide"><h2>当前处在什么位置</h2><div class="desc">近5年走势；灰色虚线是最近756个有效交易日扣非PE的动态平均值，绿色阴影为低估，蓝色阴影为极端低估，红点为当前</div><div data-zone-colors="low-green extreme-low-blue" data-duration-label-format="days-only">{trend_svg}</div></article></section>
 <section class="read"><h2>怎么看这份结果</h2><ul>

@@ -253,7 +253,8 @@ def main() -> None:
                     ax_hist.text(v, ax_hist.get_ylim()[1]*.98, label, color=color,
                                  rotation=90, va="top", ha="right", fontsize=8)
         if pd.notna(last["pe"]):
-            ax_hist.axvline(last["pe"], color="#ffffff", lw=2.6, label="当前PE")
+            current_line = ax_hist.axvline(last["pe"], color="#ffffff", lw=3.0, ls="-", label="当前PE")
+            current_line.set_gid("current-pe-solid-white")
             ax_hist.annotate(f'当前 {last["pe"]:.1f}×', xy=(last["pe"], ax_hist.get_ylim()[1]*.68),
                              xytext=(10, 8), textcoords="offset points", color="#ffffff",
                              fontsize=9, weight="bold",
