@@ -239,7 +239,7 @@ def main() -> None:
                                  rotation=90, va="top", ha="right", fontsize=8)
         if pd.notna(last["pe"]):
             ax_hist.axvline(last["pe"], color="#ffffff", lw=2.6, label="当前PE")
-            ax_hist.annotate(f'当前 {last["pe"]:.2f}×', xy=(last["pe"], ax_hist.get_ylim()[1]*.68),
+            ax_hist.annotate(f'当前 {last["pe"]:.1f}×', xy=(last["pe"], ax_hist.get_ylim()[1]*.68),
                              xytext=(10, 8), textcoords="offset points", color="#ffffff",
                              fontsize=9, weight="bold",
                              bbox=dict(boxstyle="round,pad=.35", fc="#26334d", ec="#51627e"))
@@ -260,7 +260,7 @@ def main() -> None:
         ax_ts.plot(df["date"], df[col], color=color, ls=ls, lw=1.05, label=label)
     if pd.notna(last["pe"]):
         ax_ts.scatter(last["date"], last["pe"], color=red, edgecolor="#ffffff", lw=.7, s=52, zorder=5)
-        ax_ts.annotate(f'{last["pe"]:.2f}× · {last["signal"]}', xy=(last["date"], last["pe"]),
+        ax_ts.annotate(f'{last["pe"]:.1f}× · {last["signal"]}', xy=(last["date"], last["pe"]),
                        xytext=(-88, 16), textcoords="offset points", color="#ffffff", fontsize=8,
                        bbox=dict(boxstyle="round,pad=.4", fc=red, ec="none"),
                        arrowprops=dict(arrowstyle="-", color=red))
@@ -274,7 +274,7 @@ def main() -> None:
     ax_info.set_facecolor(card); ax_info.set_xlim(0, 1); ax_info.set_ylim(0, 1); ax_info.axis("off")
     def fmt(v, pct=False):
         if v is None or pd.isna(v): return "—"
-        return f"{v:.1%}" if pct else f"{v:.2f}"
+        return f"{v:.1%}" if pct else f"{v:.1f}"
     info = [
         ("数据截止", metrics["as_of"]), ("当前扣非PE", fmt(metrics["current_pe"])),
         (f'{args.window}日分位', fmt(metrics["historical_percentile"], True)), ("μ / σ", f'{fmt(metrics["mu"])} / {fmt(metrics["sigma"])}'),
@@ -358,3 +358,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

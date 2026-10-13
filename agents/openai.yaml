@@ -1,6 +1,7 @@
 interface:
   display_name: "A股质量与估值综合报告"
   short_description: "同时生成财务质量与扣非PE估值报告，并用页签切换查看"
-  default_prompt: "使用 $a-share-quality-valuation-suite 一体化获取并校验 iFinD 数据，同时生成指定A股公司的财务质量、扣非PE TTM估值和可切换页签的综合HTML报告。"
+  default_prompt: "使用 $a-share-quality-value 一体化获取并校验 iFinD 数据，同时生成指定A股公司的财务质量、扣非PE TTM估值和可切换页签的综合HTML报告。"
 policy:
   allow_implicit_invocation: true
+
