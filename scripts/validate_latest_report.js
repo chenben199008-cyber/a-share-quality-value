@@ -18,7 +18,7 @@ const checks={
  two_level_low_zones:h.includes('data-zone-colors="low-green extreme-low-blue"'),
  days_only_duration_labels:h.includes('data-duration-label-format="days-only"')&&!/>低估\s*\d+天(?:·进行中)?</.test(h),
  operating_trend:h.includes('三年经营趋势')&&h.includes('data-chart="operating-trend"')&&h.includes('data-value-labels="true"')&&['收入','扣非净利润','经营现金流'].every(x=>h.includes(x)),
- duration:h.includes('低估 ')&&h.includes('天'),
+ duration:h.includes('data-duration-label-format="days-only"')&&/\d+天/.test(h),
  decision:h.includes('综合判断'),
  notes:h.includes('数据说明')
 };
