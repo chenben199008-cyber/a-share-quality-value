@@ -74,6 +74,21 @@ def shade_events(ax, events: pd.DataFrame, color: str, alpha: float) -> None:
         ax.axvspan(pd.Timestamp(row.start), pd.Timestamp(row.end), color=color, alpha=alpha, lw=0)
 
 
+def label_event_days(ax, events: pd.DataFrame) -> None:
+    """Label readable low events with duration only; one-day events remain in statistics."""
+    if events.empty: return
+    shown = 0
+    for row in events.itertuples():
+        if int(row.trading_days) <= 1: continue
+        start, end = pd.Timestamp(row.start), pd.Timestamp(row.end)
+        midpoint = start + (end - start) / 2
+        suffix = "·进行中" if bool(row.ongoing) else ""
+        ax.text(midpoint, .96 - (shown % 2) * .075, f"{int(row.trading_days)}天{suffix}",
+                transform=ax.get_xaxis_transform(), ha="center", va="top",
+                color="#a7f3d0", fontsize=7, clip_on=True)
+        shown += 1
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("input", type=Path)
@@ -264,6 +279,7 @@ def main() -> None:
                        xytext=(-88, 16), textcoords="offset points", color="#ffffff", fontsize=8,
                        bbox=dict(boxstyle="round,pad=.4", fc=red, ec="none"),
                        arrowprops=dict(arrowstyle="-", color=red))
+    label_event_days(ax_ts, low_events)
     panel_title(ax_ts, "副图 1 · 时间序列与低估区间",
                 "看时间：绿色为 PE＜μ-1σ，蓝色为 PE＜μ-2σ，红点为当前")
     ax_ts.set_ylabel("扣非PE（倍）")

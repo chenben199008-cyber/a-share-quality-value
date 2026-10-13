@@ -39,7 +39,9 @@ def build_html(output_dir: Path, safe_code: str, name: str, code: str) -> Path:
     df = pd.read_csv(output_dir / f"{safe_code}_pe_timeseries.csv", parse_dates=["date"])
     events = pd.read_csv(output_dir / f"{safe_code}_undervaluation_events.csv")
     metrics = json.loads((output_dir / f"{safe_code}_valuation_metrics.json").read_text(encoding="utf-8"))
-    low = events[(events["type"] == "低估") & (~events["ongoing"].astype(bool))].copy()
+    low_all = events[events["type"] == "低估"].copy()
+    extreme_all = events[events["type"] == "极端低估"].copy()
+    low = low_all[~low_all["ongoing"].astype(bool)].copy()
 
     # Histogram: actual trading-day counts; fitted curve is scaled to the same unit.
     values = df["pe"].tail(metrics["window"]).dropna()
@@ -83,9 +85,22 @@ def build_html(output_dir: Path, safe_code: str, name: str, code: str) -> Path:
     ax.plot(trend["date"], trend["mu"], color="#cbd5e1", lw=1.1, ls="--", label="滚动均线 μ")
     ax.plot(trend["date"], trend["minus_1sigma"], color=GREEN, lw=1.2, ls="--", label="低估线 μ−1σ")
     ax.plot(trend["date"], trend["minus_2sigma"], color=BLUE, lw=1.1, ls="--", label="极端线 μ−2σ")
-    for row in low.itertuples():
+    for row in low_all.itertuples():
         if pd.Timestamp(row.end) >= trend_start:
             ax.axvspan(max(pd.Timestamp(row.start), trend_start), pd.Timestamp(row.end), color=GREEN, alpha=.13, lw=0)
+    for row in extreme_all.itertuples():
+        if pd.Timestamp(row.end) >= trend_start:
+            ax.axvspan(max(pd.Timestamp(row.start), trend_start), pd.Timestamp(row.end), color=BLUE, alpha=.22, lw=0)
+    shown_labels = 0
+    for row in low_all.itertuples():
+        if int(row.trading_days) <= 1 or pd.Timestamp(row.end) < trend_start: continue
+        start = max(pd.Timestamp(row.start), trend_start); end = pd.Timestamp(row.end)
+        midpoint = start + (end - start) / 2
+        suffix = "·进行中" if bool(row.ongoing) else ""
+        ax.text(midpoint, .96 - (shown_labels % 2) * .075, f"{int(row.trading_days)}天{suffix}",
+                transform=ax.get_xaxis_transform(), ha="center", va="top", color="#a7f3d0",
+                fontsize=7, clip_on=True)
+        shown_labels += 1
     last = df.iloc[-1]
     ax.scatter(last["date"], last["pe"], color=RED, edgecolor="white", s=38, zorder=5)
     ax.set_ylabel("扣非PE（倍)")
@@ -166,7 +181,7 @@ def build_html(output_dir: Path, safe_code: str, name: str, code: str) -> Path:
 <div class="card"><div class="label">最近一次低估</div><div class="value">{int(latest["trading_days"]) if latest is not None else 0}天</div><div class="hint">{latest_text}</div></div></section>
 <section class="grid"><article class="panel"><h2>现在贵不贵</h2><div class="desc">柱形是实际出现天数，白线是当前PE</div><div class="zones"><span class="zone z1">极端低估</span><span class="zone z2">低估</span><span class="zone z3">合理</span><span class="zone z4">高估</span><span class="zone z5">极端高估</span></div>{hist_svg}</article>
 <article class="panel"><h2>历史低估通常多久</h2><div class="desc">蓝柱为最新一次；红线是累计低估时长占比</div>{pareto_svg}</article>
-<article class="panel wide"><h2>当前处在什么位置</h2><div class="desc">近5年走势；灰色虚线是最近756个有效交易日扣非PE的动态平均值，绿线以下为低估，蓝线以下为极端低估，红点为当前</div>{trend_svg}</article></section>
+<article class="panel wide"><h2>当前处在什么位置</h2><div class="desc">近5年走势；灰色虚线是最近756个有效交易日扣非PE的动态平均值，绿色阴影为低估，蓝色阴影为极端低估，红点为当前</div><div data-zone-colors="low-green extreme-low-blue" data-duration-label-format="days-only">{trend_svg}</div></article></section>
 <section class="read"><h2>怎么看这份结果</h2><ul>
 <li><span class="term">位置：</span>{position_text}</li>
 <li><span class="term">分位：</span>3年历史分位为 {metrics["historical_percentile"]:.1%}，意思是在最近 {metrics["window"]} 个交易日中，约 {metrics["historical_percentile"]:.1%} 的PE不高于当前值，约 {1-metrics["historical_percentile"]:.1%} 的PE高于当前值。分位法因此判断为“{metrics["percentile_signal"]}”。</li>
